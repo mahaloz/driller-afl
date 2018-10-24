@@ -55,6 +55,7 @@
 #include <sys/ioctl.h>
 #include <sys/file.h>
 
+
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined (__OpenBSD__)
 #  include <sys/sysctl.h>
 #endif /* __APPLE__ || __FreeBSD__ || __OpenBSD__ */
@@ -4866,28 +4867,20 @@ static u8 fuzz_one(char** argv) {
 
   stage_name  = "bitflip 2/1";
   stage_short = "flip2";
-  stage_max   = (len << 3) - 1;
+  
+  //XXX: Noa code starts here
 
-  orig_hit_cnt = new_hit_cnt;
+  //Setup No'a call arguments
+  u8 *noa_filename = queue_cur->fname;
+  u8 *noa_argv[] = {"python2","../mutate.py","filename",0};
+  noa_argv[2] = noa_filename;
 
-  for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
+  //Call No'a
+  execve(noa_argv[0],noa_argv,environ);
 
-    stage_cur_byte = stage_cur >> 3;
+  //XXX: REMOVED THE ENTIRE flip2
+  
 
-    FLIP_BIT(out_buf, stage_cur);
-    FLIP_BIT(out_buf, stage_cur + 1);
-
-    if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
-
-    FLIP_BIT(out_buf, stage_cur);
-    FLIP_BIT(out_buf, stage_cur + 1);
-
-  }
-
-  new_hit_cnt = queued_paths + unique_crashes;
-
-  stage_finds[STAGE_FLIP2]  += new_hit_cnt - orig_hit_cnt;
-  stage_cycles[STAGE_FLIP2] += stage_max;
 
   /* Four walking bits. */
 
